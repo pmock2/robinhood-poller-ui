@@ -2,8 +2,6 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4themes_dark from "@amcharts/amcharts4/themes/dark";
-import ws from 'ws';
-import axios from 'axios';
 
 am4core.useTheme(am4themes_animated);
 am4core.useTheme(am4themes_dark);
@@ -12,10 +10,13 @@ let chart = am4core.create("chartdiv", am4charts.XYChart);
 chart.cursor = new am4charts.XYCursor();
 chart.cursor.behavior = "zoomXY";
 chart.legend = new am4charts.Legend();
-chart.legend.stroke = '#ffffff';
+chart.legend.stroke = '#222222';
 chart.legend.fill = '#222222';
 chart.legend.labels.template.stroke = "#ffffff";
 chart.legend.labels.template.fill = '#222';
+chart.legend.labels.template.minWidth = 200;
+chart.legend.labels.template.textAlign = 'center';
+chart.legend.valueLabels.template.textAlign = 'center';
 
 let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
 valueAxis.renderer.stroke = ('#ffffff');
@@ -71,12 +72,45 @@ socket.addEventListener('message', (event) => {
                 series.dataFields.valueY = symbol;
                 series.name = symbol;
                 series.dataFields.dateX = "date";
-                series.tooltipText = `Series: ${symbol}\nValue: {valueY}`;
-                series.stroke = am4core.color('#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')); // red
+
+                switch (symbol) {
+                    case 'DOGE':
+                        series.stroke = am4core.color('#ecfc03');
+                        series.fill = am4core.color('#ecfc03');
+                        break;
+                    case 'ETC':
+                        series.stroke = am4core.color('#03fcd7');
+                        series.fill = am4core.color('#03fcd7');
+                        break;
+                    case 'ETH':
+                        series.stroke = am4core.color('#a503fc');
+                        series.fill = am4core.color('#a503fc');
+                        break;
+                    case 'LTC':
+                        series.stroke = am4core.color('#73fc03');
+                        series.fill = am4core.color('#73fc03');
+                        break;
+                    case 'BTC':
+                        series.stroke = am4core.color('#ff0000');
+                        series.fill = am4core.color('#ff0000');
+                        break;
+                    case 'BCH':
+                        series.stroke = am4core.color('#030ffc');
+                        series.fill = am4core.color('#030ffc');
+                        break;
+                    case 'BSV':
+                        series.stroke = am4core.color('#fc03d7');
+                        series.fill = am4core.color('#fc03d7');
+                        break;
+
+                    default:
+                        series.stroke = am4core.color('#ffffff');
+                        series.fill = am4core.color('#ffffff');
+                        break;
+                }
                 series.strokeWidth = 3;
-                
-                //series.tooltipText = "{dateX}: {valueY}";
                 series.tooltip.pointerOrientation = "vertical";
+                series.tooltipText = `Series: ${symbol}\nValue: {valueY}%`;
 
                 chartSeries[symbol] = chart.series.push(series);
 
@@ -85,8 +119,16 @@ socket.addEventListener('message', (event) => {
             console.log(chart.data);
         }
         else {
+            console.log(`Updaing ${symbol}`);
             chart.addData(newPoint, chart.data.length > 1440 ? 1 : 0);
+            //chartSeries[symbol].legendSettings.labelText = `{name}[/] - $${message.payload.prices[symbol]}`;
+            for (var [symbol, price] of Object.entries(
+                message.payload.values
+            )) {
+                chartSeries[symbol].legendSettings.labelText = `{name}[/] - $${message.payload.prices[symbol]}`;
+            }
         }
+
     }
 
 });
