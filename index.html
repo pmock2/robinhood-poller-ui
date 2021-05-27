@@ -6,18 +6,28 @@
     <style>
         #chartdiv {
             width: 100%;
-            height: 800px;
+            height: 75%;
+        }
+        #container {
+            width: calc(100vw - 20px); 
+            height: calc(100vh - 20px); 
+            position: absolute;
+            padding: 10px;
         }
         body * {
             font-family: Arial, Helvetica, sans-serif;
         }
         body {
             background: #222;
+            margin: 0;
         }
     </style>
 </head>
 
 <body>
+    <div id="container" style="">
+        <div id="chartdiv"></div>
+    </div>
     <div id="chartdiv"></div>
     <script src="dist/index.js"></script>
 </body>

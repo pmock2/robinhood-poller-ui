@@ -54,18 +54,22 @@ socket.addEventListener('message', (event) => {
     var message = JSON.parse(event.data);
     console.log(message);
 
+    //if receiving new data
     if (message.id === undefined) {
         let newPoint = {
             'date': new Date(message.payload.time)
         };
 
-        for (var [symbol, price] of Object.entries(
+        //create the new points percent values
+        for (var [symbol, percentChange] of Object.entries(
             message.payload.values
         )) {
-            newPoint[symbol] = price;
+            newPoint[symbol] = percentChange.toFixed(2);
         }
+
+        //if we have no data in our chart
         if (chart.data.length === 0) {
-            for (var [symbol, price] of Object.entries(
+            for (var [symbol, percentChange] of Object.entries(
                 message.payload.values
             )) {
                 let series = new am4charts.LineSeries();
@@ -110,7 +114,7 @@ socket.addEventListener('message', (event) => {
                 }
                 series.strokeWidth = 3;
                 series.tooltip.pointerOrientation = "vertical";
-                series.tooltipText = `Series: ${symbol}\nValue: {valueY}%`;
+                series.tooltipText = `${symbol}: {valueY}%`;
 
                 chartSeries[symbol] = chart.series.push(series);
 
@@ -119,13 +123,11 @@ socket.addEventListener('message', (event) => {
             console.log(chart.data);
         }
         else {
-            console.log(`Updaing ${symbol}`);
             chart.addData(newPoint, chart.data.length > 1440 ? 1 : 0);
-            //chartSeries[symbol].legendSettings.labelText = `{name}[/] - $${message.payload.prices[symbol]}`;
             for (var [symbol, price] of Object.entries(
                 message.payload.values
             )) {
-                chartSeries[symbol].legendSettings.labelText = `{name}[/] - $${message.payload.prices[symbol]}`;
+                chartSeries[symbol].legendSettings.labelText = `{name}[/] : ${message.payload.values[symbol].toFixed(2)}% ($${message.payload.prices[symbol].toFixed(3)})`;
             }
         }
 
